@@ -6,17 +6,29 @@
   (is (= (py/import "bpy")
          "import bpy")))
 
-(deftest double-quote
+(deftest clj-value->py-value-test
+  (is (= (py/clj-value->py-value "asd")
+         "\"asd\""))
+  (is (= (py/clj-value->py-value 1729)
+         1729))
+  (is (= (py/clj-value->py-value :key)
+         "key")))
+
+(deftest double-quote-test
   (is (= (py/double-quote "s")
          "\"s\"")))
 
 (deftest print-test
-  (testing "Single arg"
+  (testing "Single arg string"
     (is (= (py/print "Hello world!")
            "print(\"Hello world!\")")))
-  (testing "Multi arg"
+  (testing "Multi arg strings"
     (is (= (py/print "Hello" "world!")
            "print(\"Hello\", \"world!\")")))
   (testing "Multi arg"
-    (is (= (py/print "Hello" "world!" :x)
-           "print(\"Hello\", \"world!\", x)"))))
+    (is (= (py/print "Hello" "world!" :x 1)
+           "print(\"Hello\", \"world!\", x, 1)"))))
+
+(deftest property-test
+  (is (= true true)))
+  
