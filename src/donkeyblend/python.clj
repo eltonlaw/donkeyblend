@@ -36,3 +36,11 @@
   (let [;; Resolve variables and double quote literals
         args (->> (map clj-value->py-value args) (str/join ", "))]
     (str "print" "(" (apply str args) ")")))
+
+(defmacro attr [obj & attrs]
+  (loop [s (clj-value->py-value obj)
+         attrs (map clj-value->py-value attrs)]
+    (if (seq attrs)
+      (recur (str s "." (first attrs))
+             (rest attrs))
+      s)))

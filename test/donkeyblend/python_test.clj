@@ -29,6 +29,14 @@
     (is (= (py/print "Hello" "world!" :x 1)
            "print(\"Hello\", \"world!\", x, 1)"))))
 
-(deftest property-test
-  (is (= true true)))
-  
+(deftest attr-test
+  (is (= (py/attr :bpy)
+         "bpy"))
+  (is (= (py/attr :bpy :data)
+         "bpy.data"))
+  (is (= (py/attr :bpy :data :objects)
+         "bpy.data.objects"))
+  #_(is (= (py/attr :bpy :data :objects (:get "Cube"))
+           "bpy.data.objects[\"Cube\"]"))
+  #_(is (= (:+= 1 (py/attr :bpy :data :objects (:get "Cube") :data :vertices (:get 0) :co :x))
+           "bpy.data.objects[\"Cube\"].data.vertices[0].co.x += 1.0")))
