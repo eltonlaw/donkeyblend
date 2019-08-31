@@ -2,6 +2,8 @@
   "Naive implementation of clojure bindings for a subset of python"
   (:require [clojure.string :as str]))
 
+;;;;;;;; STRING UTILS ;;;;;;;;;;;
+
 (defn surround
   ([string sym]
    (str sym string sym))
@@ -11,7 +13,7 @@
 (defn surround-round-par [string]
    (surround string "(" ")"))
 
-(defn clj-value->py-value
+(defn clj->py-literal
   " Handle different types of input types
 
   To differentiate between what should be quoted and what should be left as
@@ -26,21 +28,17 @@
     (keyword? v) (name v)
     :default (throw (Exception. (str "Don't know how to handle type:" (type v))))))
 
-(defn import
-  [module]
+(defn fn-invoke [& args]
+  (let [[fn & args] (map clj->py-literal args)]
+    (str fn (surround-round-par (str/join ", " args)))))
+
+;;;;;; PYTHON CORE ;;;;;;;;;;;;;;;;
+
+(defn assign [name value]
+  (str (clj->py-literal name) " = " (clj->py-literal value)))
+
+(defn import [module]
   (format "import %s" module)) 
 
-(defn print
-  "Strings are passed on as string literals and keywords are resolved"
-  [& args]
-  (let [;; Resolve variables and double quote literals
-        args (->> (map clj-value->py-value args) (str/join ", "))]
-    (str "print" "(" (apply str args) ")")))
-
-(defmacro attr [obj & attrs]
-  (loop [s (clj-value->py-value obj)
-         attrs (map clj-value->py-value attrs)]
-    (if (seq attrs)
-      (recur (str s "." (first attrs))
-             (rest attrs))
-      s)))
+(defn print [& args]
+  (apply fn-invoke :print args))

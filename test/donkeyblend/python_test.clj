@@ -6,17 +6,27 @@
   (is (= (py/import "bpy")
          "import bpy")))
 
-(deftest clj-value->py-value-test
-  (is (= (py/clj-value->py-value "asd")
+(deftest clj->py-literal-test
+  (is (= (py/clj->py-literal "asd")
          "\"asd\""))
-  (is (= (py/clj-value->py-value 1729)
+  (is (= (py/clj->py-literal 1729)
          1729))
-  (is (= (py/clj-value->py-value :key)
+  (is (= (py/clj->py-literal :key)
          "key")))
 
 (deftest double-quote-test
-  (is (= (py/double-quote "s")
-         "\"s\"")))
+  (is (= (py/surround "s" "\"") "\"s\"")))
+
+(deftest fn-invoke
+  (is (= (py/fn-invoke :foo 1) "foo(1)"))
+  (is (= (py/fn-invoke :foo 1 "string" :var) "foo(1, \"string\", var)"))
+  (is (= (apply py/fn-invoke :foo [1 "string" :var])
+         "foo(1, \"string\", var)")))
+
+(deftest assign-test
+  (is (= (py/assign :foo "s") "foo = \"s\""))
+  (is (= (py/assign :foo 1) "foo = 1"))
+  (is (= (py/assign :foo :bar) "foo = bar")))
 
 (deftest print-test
   (testing "Single arg string"
@@ -28,15 +38,3 @@
   (testing "Multi arg"
     (is (= (py/print "Hello" "world!" :x 1)
            "print(\"Hello\", \"world!\", x, 1)"))))
-
-(deftest attr-test
-  (is (= (py/attr :bpy)
-         "bpy"))
-  (is (= (py/attr :bpy :data)
-         "bpy.data"))
-  (is (= (py/attr :bpy :data :objects)
-         "bpy.data.objects"))
-  #_(is (= (py/attr :bpy :data :objects (:get "Cube"))
-           "bpy.data.objects[\"Cube\"]"))
-  #_(is (= (:+= 1 (py/attr :bpy :data :objects (:get "Cube") :data :vertices (:get 0) :co :x))
-           "bpy.data.objects[\"Cube\"].data.vertices[0].co.x += 1.0")))
