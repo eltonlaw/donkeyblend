@@ -1,12 +1,12 @@
 (ns donkeyblend.compile-test
   (:require [clojure.test :refer [deftest is]]
-            [donkeyblend.compile :refer :all]))
+            [donkeyblend.compile :as c]
+            [donkeyblend.python :as py]))
 
-(deftest py-import-test
-  (is (= (py-import "bpy")
-         "import bpy")))
+(c/defscript my-script
+  (py/import "bpy")
+  (py/print "h"))
 
-(deftest ->py-test
-  (let [bpy nil]
-    (is (= (-> bpy .data .objects (.get "Cube") .vertices (.get 0) .co .x inc)
-           "bpy.data.objects[\"Cube\"].data.vertices[0].co.x += 1.0"))))
+(deftest defscript-test
+  (is (= "import bpy\nprint(\"h\")"
+         my-script)))

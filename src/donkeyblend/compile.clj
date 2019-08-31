@@ -1,7 +1,8 @@
 (ns donkeyblend.compile
-  (:require [donkeyblend.python :as py]))
+  (:require [clojure.string :as str]
+            [donkeyblend.python :as py]))
 
-(defn ->py []
-  (py/import "bpy"))
-
-(defmacro defscript [script-name & body])
+(defmacro defscript
+  "All top level arguments are joined"
+  [script-name & body]
+  `(def ~script-name (str/join "\n" [~@body])))
