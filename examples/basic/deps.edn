@@ -1,6 +1,7 @@
 {:deps
-  {eltonlaw/donkeyblend {:git/url "https://github.com/eltonlaw/donkeyblend.git"
-                          :sha "9691b916db00c6918235c508941b53b46d62c6fa"}
+  {eltonlaw/donkeyblend {:git/url "https://github.com/eltonlaw/donkeyblend"
+                         :sha "b1f26b2f228af864d7e97d76a006ca4760fc0226"}
    org.clojure/clojure {:mvn/version "1.10.0"}
    org.clojure/tools.nrepl {:mvn/version "0.2.13"}} 
- :aliases {:run {:main-opts ["-m" "crawly.core"]}}}
+ :paths ["./"]
+ :aliases {:build {:main-opts ["-m" "basic"]}}}
