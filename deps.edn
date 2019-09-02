@@ -1,0 +1,10 @@
+{:deps
+  {com.taoensso/timbre {:mvn/version "4.10.0"}
+   org.clojure/clojure {:mvn/version "1.10.0"}
+   org.clojure/tools.nrepl {:mvn/version "0.2.13"}} 
+ :paths ["src" "dev" "resources"]
+ :aliases {:run {:main-opts ["-m" "donkeyblend.core"]}
+           :test {:extra-paths ["test"]}
+           :runner {:extra-deps {com.cognitect/test-runner {:git/url "https://github.com/cognitect-labs/test-runner.git"
+                                                            :sha "209b64504cb3bd3b99ecfec7937b358a879f55c1"}} 
+                    :main-opts ["-m" "cognitect.test-runner"]}}}
