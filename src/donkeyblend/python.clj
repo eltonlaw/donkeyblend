@@ -1,5 +1,6 @@
 (ns donkeyblend.python
   "Naive implementation of clojure bindings for a subset of python"
+  (:refer-clojure :exclude (print import))
   (:require [clojure.string :as str]))
 
 ;;;;;;;; STRING UTILS ;;;;;;;;;;;
@@ -12,6 +13,9 @@
 
 (defn surround-round-par [string]
    (surround string "(" ")"))
+
+(defn surround-curly-par [string]
+   (surround string "{" "}"))
 
 (defn clj->py-literal
   " Handle different types of input types
@@ -35,10 +39,22 @@
 ;;;;;; PYTHON CORE ;;;;;;;;;;;;;;;;
 
 (defn assign [name value]
-  (str (clj->py-literal name) " = " (clj->py-literal value)))
+  (str name " = " value))
+
+(defn dict [m]
+  (->> (map #(vector (-> % first name) (second %)) m)
+       (map #(map clj->py-literal %))
+       (map #(str/join ": " %))
+       (str/join ", ")
+       surround-curly-par))
 
 (defn import [module]
   (format "import %s" module)) 
 
 (defn print [& args]
   (apply fn-invoke :print args))
+
+;;;;; HIGH LEVEL INTERFACE ;;;;;;;;;;;;
+
+(defn set-bl-info [m]
+  (assign (clj->py-literal :bl_info) (dict m)))
