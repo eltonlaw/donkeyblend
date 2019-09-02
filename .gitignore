@@ -1,2 +1,6 @@
 .nrepl-history
+*/.nrepl-history
 .nrepl-port
+*/.nrepl-port
+.cpcache
+*/.cpcache
