@@ -35,7 +35,6 @@
     :default (throw (Exception. (str "Don't know how to handle type:" (type v))))))
 
 (defn fn-invoke [& args]
-  (println "fn-invoke args" args)
   (let [[fn & args] (map clj->py-literal args)]
     (str fn (surround-round-par (str/join ", " args)))))
 

@@ -1,6 +1,6 @@
 {:deps
   {eltonlaw/donkeyblend {:git/url "https://github.com/eltonlaw/donkeyblend"
-                         :sha "b1f26b2f228af864d7e97d76a006ca4760fc0226"}
+                         :sha "d04e134a8c1bbbf5506d36f53249f3413598e45f"}
    org.clojure/clojure {:mvn/version "1.10.0"}
    org.clojure/tools.nrepl {:mvn/version "0.2.13"}} 
  :paths ["./"]
