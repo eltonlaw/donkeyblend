@@ -50,3 +50,15 @@
 (deftest set-bl-info-test
   (is (= (py/set-bl-info {:name "Move X Axis" :category "Object"})
          "bl_info = {\"name\": \"Move X Axis\", \"category\": \"Object\"}")))
+
+(deftest attr-test
+  (is (= (py/attr :bpy)
+         "bpy"))
+  (is (= (py/attr :bpy :data)
+         "bpy.data"))
+  (is (= (py/attr :bpy :data :objects)
+         "bpy.data.objects"))
+  (is (= (py/attr :bpy :data :objects [:get "Cube"])
+         "bpy.data.objects.get(\"Cube\")"))
+  (is (= (py/attr :bpy :data :objects [:get "Cube"] :data :vertices [:index 0] :co :x)
+         "bpy.data.objects.get(\"Cube\").data.vertices.index(0).co.x")))

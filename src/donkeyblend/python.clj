@@ -35,6 +35,7 @@
     :default (throw (Exception. (str "Don't know how to handle type:" (type v))))))
 
 (defn fn-invoke [& args]
+  (println "fn-invoke args" args)
   (let [[fn & args] (map clj->py-literal args)]
     (str fn (surround-round-par (str/join ", " args)))))
 
@@ -55,6 +56,19 @@
 
 (defn print [& args]
   (apply fn-invoke :print args))
+
+(defn attr [& args]
+  (let [[obj & args] args]
+    (loop [obj (clj->py-literal obj)
+           args args]
+      (if (seq args)
+        (let [dot (if (sequential? (first args))
+                    (apply fn-invoke (first args))
+                    (clj->py-literal (first args)))]
+
+          (recur (str obj "." dot)
+                 (rest args)))
+        obj))))
 
 ;;;;; HIGH LEVEL INTERFACE ;;;;;;;;;;;;
 
