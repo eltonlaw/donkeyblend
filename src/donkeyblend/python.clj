@@ -30,6 +30,8 @@
     (number? v) v
     (string? v) (surround v "\"")
     (keyword? v) (name v)
+    (list? v) (map clj->py-literal v)
+    (vector? v) (mapv clj->py-literal v)
     :default (throw (Exception. (str "Don't know how to handle type:" (type v))))))
 
 (defn fn-invoke [& args]

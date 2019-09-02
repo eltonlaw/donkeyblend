@@ -10,10 +10,13 @@
 (deftest clj->py-literal-test
   (is (= (py/clj->py-literal "asd")
          "\"asd\""))
-  (is (= (py/clj->py-literal 1729)
-         1729))
+  (is (= (py/clj->py-literal 1729) 1729))
   (is (= (py/clj->py-literal :key)
-         "key")))
+         "key"))
+  (is (= (py/clj->py-literal '(:get "Cube"))
+         '("get" "\"Cube\"")))
+  (is (= (py/clj->py-literal [:get "Cube"])
+         ["get" "\"Cube\""])))
 
 (deftest double-quote-test
   (is (= (py/surround "s" "\"") "\"s\"")))
