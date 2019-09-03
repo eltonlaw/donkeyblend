@@ -35,7 +35,7 @@
     :default (throw (Exception. (str "Don't know how to handle type:" (type v))))))
 
 (defn fn-invoke [& args]
-  (let [[fn & args] (map clj->py-literal args)]
+  (let [[fn & args] args]
     (str fn (surround-round-par (str/join ", " args)))))
 
 ;;;;;; PYTHON CORE ;;;;;;;;;;;;;;;;
@@ -54,17 +54,16 @@
   (format "import %s" module)) 
 
 (defn print [& args]
-  (apply fn-invoke :print args))
+  (apply fn-invoke "print" (map clj->py-literal args)))
 
 (defn attr [& args]
-  (let [[obj & args] args]
-    (loop [obj (clj->py-literal obj)
+  (let [[obj & args] (map clj->py-literal args)]
+    (loop [obj obj
            args args]
       (if (seq args)
         (let [dot (if (sequential? (first args))
                     (apply fn-invoke (first args))
-                    (clj->py-literal (first args)))]
-
+                    (first args))]
           (recur (str obj "." dot)
                  (rest args)))
         obj))))

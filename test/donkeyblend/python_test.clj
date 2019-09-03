@@ -22,9 +22,9 @@
   (is (= (py/surround "s" "\"") "\"s\"")))
 
 (deftest fn-invoke
-  (is (= (py/fn-invoke :foo 1) "foo(1)"))
-  (is (= (py/fn-invoke :foo 1 "string" :var) "foo(1, \"string\", var)"))
-  (is (= (apply py/fn-invoke :foo [1 "string" :var])
+  (is (= (py/fn-invoke "foo" 1) "foo(1)"))
+  (is (= (py/fn-invoke "foo" 1 "\"string\"" "var") "foo(1, \"string\", var)"))
+  (is (= (apply py/fn-invoke "foo" [1 "\"string\"" "var"])
          "foo(1, \"string\", var)")))
 
 (deftest assign-test
