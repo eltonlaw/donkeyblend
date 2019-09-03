@@ -28,7 +28,7 @@
   [v]
   (cond 
     (number? v) v
-    (string? v) (surround v "\"")
+    (string? v) (surround v "'")
     (keyword? v) (name v)
     (list? v) (map clj->py-literal v)
     (vector? v) (mapv clj->py-literal v)
