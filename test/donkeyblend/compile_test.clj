@@ -1,12 +1,13 @@
 (ns donkeyblend.compile-test
   (:require [clojure.test :refer [deftest is]]
             [donkeyblend.compile :as c]
-            [donkeyblend.python :as py]))
+            [donkeyblend.python.lang :as lang]
+            [donkeyblend.test-utils :refer [is-str=]]))
 
 (c/defscript my-script
-  (py/import "bpy")
-  (py/print "h"))
+  (lang/import "bpy")
+  (lang/print "h"))
 
 (deftest defscript-test
-  (is (= "import bpy\nprint(\"h\")"
-         my-script)))
+  (is-str= "import bpy\nprint('h')"
+           my-script))

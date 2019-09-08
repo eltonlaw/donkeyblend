@@ -1,6 +1,5 @@
 (ns donkeyblend.compile
-  (:require [clojure.string :as str]
-            [donkeyblend.python :as py]))
+  (:require [clojure.string :as str]))
 
 (defmacro defscript
   "All top level arguments are joined"

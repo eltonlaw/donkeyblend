@@ -1,9 +1,6 @@
-(ns donkeyblend.python
-  "Naive implementation of clojure bindings for a subset of python"
+(ns donkeyblend.python.str-utils
   (:refer-clojure :exclude (print import))
   (:require [clojure.string :as str]))
-
-;;;;;;;; STRING UTILS ;;;;;;;;;;;
 
 (defn surround
   ([string sym]
@@ -37,38 +34,3 @@
 (defn fn-invoke [& args]
   (let [[fn & args] args]
     (str fn (surround-round-par (str/join ", " args)))))
-
-;;;;;; PYTHON CORE ;;;;;;;;;;;;;;;;
-
-(defn assign [name value]
-  (str name " = " value))
-
-(defn dict [m]
-  (->> (map #(vector (-> % first name) (second %)) m)
-       (map #(map clj->py-literal %))
-       (map #(str/join ": " %))
-       (str/join ", ")
-       surround-curly-par))
-
-(defn import [module]
-  (format "import %s" module)) 
-
-(defn print [& args]
-  (apply fn-invoke "print" (map clj->py-literal args)))
-
-(defn attr [& args]
-  (let [[obj & args] (map clj->py-literal args)]
-    (loop [obj obj
-           args args]
-      (if (seq args)
-        (let [dot (if (sequential? (first args))
-                    (apply fn-invoke (first args))
-                    (first args))]
-          (recur (str obj "." dot)
-                 (rest args)))
-        obj))))
-
-;;;;; HIGH LEVEL INTERFACE ;;;;;;;;;;;;
-
-(defn set-bl-info [m]
-  (assign (clj->py-literal :bl_info) (dict m)))

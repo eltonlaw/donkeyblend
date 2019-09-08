@@ -1,0 +1,10 @@
+{:bpy
+ {:app nil
+  :context nil
+  :data nil
+  :msgbus nil
+  :ops nil
+  :path nil
+  :props nil
+  :types nil
+  :util nil}}

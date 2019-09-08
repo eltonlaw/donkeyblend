@@ -1,2 +1,0 @@
-(ns donkeyblend.exec
-  (:require []))
