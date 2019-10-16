@@ -5,3 +5,5 @@
 .cpcache
 */.cpcache
 NOTES.md
+.rebel_readline_history
+Session.vim
