@@ -6,11 +6,16 @@
              :refer [analyze analyze-in-env wrapping-meta analyze-fn-method]
              :rename {analyze -analyze}]
             [clojure.tools.analyzer.jvm :as ana.jvm]
+            [clojure.tools.nrepl.server :as nrepl]
             [clojure.pprint :as pp]
             [clojure.repl :refer :all]
             [rebel-readline.clojure.line-reader :as clj-line-reader]
             [rebel-readline.jline-api :as api]
             [rebel-readline.clojure.main :as rr-clj-main]))
+
+
+(defonce nrepl-server (nrepl/start-server))
+(spit "./.nrepl-port" (:port nrepl-server))
 
 ;; https://github.com/bhauman/rebel-readline/issues/151
 (defn pprint
