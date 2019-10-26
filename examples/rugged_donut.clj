@@ -12,5 +12,16 @@
   (utils/remove-all)
   (let [[target camera lamp] (u/simple-scene [0 0 -3]
                                              [4.2 4.2 5]
-                                             [-5 5 10])]
-    (println "...")))
+                                             [-5 5 10])
+        empty-obj (-> bpy (.data) (.objects) (.new "Empty", nil))
+        transition-fn #(vec (+ (* 0.7 (cos (* 2 pi %))) 1)
+                            (* 0.7 (sin (* 2 pi %)))
+                            (* 0.4 (sin (* 2 pi %))))]
+    (for [i (range 100)]
+      (-> obj
+          (.keyframe_insert {^Attribute :location (transition-fn t)
+                             :data_path "locations"
+                             :index -1
+                             :frame frame}
+                            (/ i num-fames))))))
+                            
