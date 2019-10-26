@@ -7,6 +7,10 @@
             [rebel-readline.jline-api :as api]
             [rebel-readline.clojure.main :as rr-clj-main]))
 
+
+(defonce nrepl-server (nrepl/start-server))
+(spit "./.nrepl-port" (:port nrepl-server))
+
 ;; https://github.com/bhauman/rebel-readline/issues/151
 (defn pprint
   "Print a syntax highlighted clojure value.
