@@ -7,9 +7,17 @@
              :refer [analyze analyze-in-env wrapping-meta analyze-fn-method]
              :rename {analyze -analyze}]
             [clojure.tools.analyzer
-             [env :as env :refer [*env*]]]))
+             [env :as env :refer [*env*]]]
+            [clojure.spec.alpha :as s]))
 
-(defn macroexpand-1 [form env] nil)
+(s/def ::form clojure.lang.PersistentList) ;; unanalyzed form
+(s/def ::locals (s/map-of symbol? ::ast))
+(s/def ::context #{:ctx/expr :ctx/return :ctx/statement})
+(s/def ::env (s/keys :req-un [::locals ::context]))
+(s/def ::op keyword?)
+(s/def ::children (s/coll-of keyword?)) ;; child nodes in execution order
+(s/def ::ast (s/keys :req-un [::op ::form ::env]
+                     :opt-un [::children]))
 
 (defn parse [[op & args] env] nil)
 
@@ -22,6 +30,16 @@
 (defn global-env [] (atom {}))
 
 (defn run-passes [ast] ast)
+
+(s/fdef analyze
+  :args (s/alt
+          :1 (s/cat :form ::form)
+          :2 (s/cat :form ::form
+                    :env ::env)
+          :3 (s/cat :form ::form
+                    :env ::env
+                    :opts map?))
+  :ret ::ast)
 
 (defn analyze
   "Analyzes a clojure form using tools.analyzer augmented with
