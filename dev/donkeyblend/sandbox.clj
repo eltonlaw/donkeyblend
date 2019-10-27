@@ -1,5 +1,12 @@
 (ns donkeyblend.sandbox
   (:require [donkeyblend.core :as db]
+            [donkeyblend.tools.analyzer.py :as ana.py]
+            [clojure.tools.analyzer
+             :as ana
+             :refer [analyze analyze-in-env wrapping-meta analyze-fn-method]
+             :rename {analyze -analyze}]
+            [clojure.tools.analyzer.jvm :as ana.jvm]
+            [cljs.analyzer.js :as ana.js]
             [clojure.tools.nrepl.server :as nrepl]
             [clojure.pprint :as pp]
             [clojure.repl :refer :all]
