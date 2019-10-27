@@ -4,7 +4,7 @@
 
 ;; default fn for handling tags without a reader
 (def ^:dynamic *default-data-reader-fn*
-  (atom) (constantly :unknown-tag))
+  (atom (constantly :unknown-tag)))
 ;; map with symbol (... our custom tag) as key and fn as value
 (def ^:dynamic *tag-table*
   (atom {}))
