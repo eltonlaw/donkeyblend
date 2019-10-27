@@ -5,11 +5,15 @@
 
 (deftest test-read-string
   (testing "empty string"
-    (is (= nil (reader/read-string ""))))
+    (is (= '() (reader/read-string ""))))
   (testing "string with single object"
-    (is (= '(ns my-namespace (:import bpy) (:require [utils :as u]))
+    (is (= '((ns my-namespace (:import bpy) (:require [utils :as u])))
            (reader/read-string
              (str "(ns my-namespace\n"
                   ";; some comment \n"
                   "  (:import bpy)\n"
-                  "  (:require [utils :as u]))"))))))
+                  "  (:require [utils :as u]))")))))
+  (testing "string with multiple objects"
+    (is (= '({} [])
+           (reader/read-string
+             (str "{} []"))))))
