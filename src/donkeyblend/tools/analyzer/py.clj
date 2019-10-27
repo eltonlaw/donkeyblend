@@ -19,7 +19,19 @@
 (s/def ::ast (s/keys :req-un [::op ::form ::env]
                      :opt-un [::children]))
 
-(defn parse [[op & args] env] nil)
+(defn macroexpand-1 [form env] nil)
+
+(s/fdef parse
+  :args (s/cat :form ::form
+               :env ::env)
+  :ret ::ast)
+
+(defn parse
+  "Parse for custom special forms defaulting to
+  `clojure.tools.analyzer/-analyze` otherwise"
+  [form env]
+  (case (first form)
+    (ana/-parse form env)))
 
 (defn create-var [sym env] nil)
 
