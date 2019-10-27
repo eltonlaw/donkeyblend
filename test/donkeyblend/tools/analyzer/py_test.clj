@@ -14,3 +14,10 @@
     (let [env (ana.py/empty-global-env)]
       (is (= (ana.py/empty-global-env)
              {:namespaces {}})))))
+
+(deftest parse
+  (let [env (ana.py/empty-env)
+        test-form '(let [x 1]
+                     (print x))]
+    (is (= (ana.py/parse test-form env)
+           {}))))
