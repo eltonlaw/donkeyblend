@@ -1,7 +1,7 @@
 (ns donkeyblend.tools.analyzer.py
   "Analyzer for clojure code, extends tools.analyzer with Python specific passes/forms
   **focus is on blender's python interface**"
-  (:refer-clojure :exclude [var? macroexpand-1 macroexpand])
+  (:refer-clojure :exclude [var? macroexpand-1 macroexpand *ns*])
   (:require [clojure.tools.analyzer
              :as ana
              :refer [analyze analyze-in-env wrapping-meta analyze-fn-method]
@@ -10,10 +10,11 @@
              [env :as env :refer [*env*]]]
             [clojure.spec.alpha :as s]))
 
+(s/def ::ns symbol?) ;; unanalyzed form
 (s/def ::form clojure.lang.PersistentList) ;; unanalyzed form
 (s/def ::locals (s/map-of symbol? ::ast))
 (s/def ::context #{:ctx/expr :ctx/return :ctx/statement})
-(s/def ::env (s/keys :req-un [::locals ::context]))
+(s/def ::env (s/keys :req-un [::locals ::context ::ns]))
 (s/def ::op keyword?)
 (s/def ::children (s/coll-of keyword?)) ;; child nodes in execution order
 (s/def ::ast (s/keys :req-un [::op ::form ::env]
@@ -25,9 +26,18 @@
 
 (defn var? [obj] nil)
 
-(defn empty-env [] {})
+(def ^:dynamic *ns* 'donkeyblend.user)
+
+(s/fdef empty-env
+  :ret (s/keys :req-un [::context ::locals ::ns]))
+
+(defn empty-env []
+  {:context :ctx/statement
+   :locals {}
+   :ns *ns*})
 
 (defn global-env [] (atom {}))
+
 
 (defn run-passes [ast] ast)
 
