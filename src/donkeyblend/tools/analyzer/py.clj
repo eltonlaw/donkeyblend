@@ -11,6 +11,7 @@
             [clojure.spec.alpha :as s]))
 
 (s/def ::ns symbol?) ;; unanalyzed form
+(s/def ::namespaces (s/map-of symbol? var?))
 (s/def ::form clojure.lang.PersistentList) ;; unanalyzed form
 (s/def ::locals (s/map-of symbol? ::ast))
 (s/def ::context #{:ctx/expr :ctx/return :ctx/statement})
@@ -36,8 +37,11 @@
    :locals {}
    :ns *ns*})
 
-(defn global-env [] (atom {}))
+(s/fdef empty-global-env
+  :ret (s/keys :req-un [::namespaces]))
 
+(defn empty-global-env []
+  {:namespaces {}})
 
 (defn run-passes [ast] ast)
 
@@ -61,5 +65,5 @@
              ana/create-var    create-var
              ana/parse         parse
              ana/var?          var?]
-     (env/ensure (global-env)
+     (env/ensure (atom (empty-global-env))
        (run-passes (-analyze form env))))))

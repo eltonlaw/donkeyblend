@@ -8,3 +8,9 @@
            {:context :ctx/statement
             :locals  {}
             :ns      ana.py/*ns*}))))
+
+(deftest empty-global-env
+  (testing "verify no spec errors"
+    (let [env (ana.py/empty-global-env)]
+      (is (= (ana.py/empty-global-env)
+             {:namespaces {}})))))
