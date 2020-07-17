@@ -9,12 +9,14 @@
            :dev {:extra-paths ["dev" "test"]
                  :extra-deps {com.bhauman/rebel-readline {:mvn/version "0.1.4"}}
                  :main-opts  ["-m" "rebel-readline.main"]}
-           :test {:extra-paths ["test"]}
-           :runner {:extra-deps {com.cognitect/test-runner {:git/url "https://github.com/cognitect-labs/test-runner.git"
-                                                            :sha "209b64504cb3bd3b99ecfec7937b358a879f55c1"}} 
-                    :main-opts ["-m" "cognitect.test-runner"]}
+           :test {:extra-paths ["dev" "test"]
+                  :extra-deps {com.cognitect/test-runner
+                               {:git/url "https://github.com/cognitect-labs/test-runner"
+                                :sha "3cb0a9daf1cb746259dc8309b218f9211ad3b33b"}}
+                  :main-opts ["-m" "cognitect.test-runner"
+                              "-d" "test"]}
            :pack {:extra-deps {pack/pack.alpha {:git/url "https://github.com/juxt/pack.alpha.git"
                                                 :sha "d9023b24c3d589ba6ebc66c5a25c0826ed28ead5"}}
                   :main-opts ["-m" "mach.pack.alpha.skinny" "--no-libs"  "--project-path" "donkeyblend.jar"]}
            :deploy {:extra-deps {deps-deploy {:mvn/version "RELEASE"}}
-                     :main-opts ["-m" "deps-deploy.deps-deploy" "deploy" "donkeyblend.jar"]}}}
+                    :main-opts ["-m" "deps-deploy.deps-deploy" "deploy" "donkeyblend.jar"]}}}
