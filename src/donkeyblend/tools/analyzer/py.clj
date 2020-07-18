@@ -7,6 +7,7 @@
              :refer [analyze analyze-in-env wrapping-meta analyze-fn-method]
              :rename {analyze -analyze}]
             [clojure.tools.analyzer
+             [utils :refer [mmerge] :as u]
              [env :as env :refer [*env*]]]))
 
 (defn ^:dynamic run-passes
@@ -14,41 +15,59 @@
   [ast]
   ast)
 
-(defn empty-env
-  "Returns an empty env map"
-  []
-  {:context    :ctx/expr
-   :locals     {}
-   :ns         (ns-name *ns*)})
+(defn build-ns-map []
+  (into {} (mapv #(vector (ns-name %)
+                          {:mappings (merge (ns-map %) {'in-ns #'clojure.core/in-ns
+                                                        'ns    #'clojure.core/ns})
+                           :aliases  (reduce-kv (fn [a k v] (assoc a k (ns-name v)))
+                                                {} (ns-aliases %))
+                           :ns       (ns-name %)})
+                 (all-ns))))
 
-(defn global-env
-  "Commmon keys are `:namespaces`
-  
-  - `tools.analyzer.js` has `:js-dependency-index`
-  - `tools.analyzer.jvm` has `:update-ns-map!`"
-  []
+(defn global-env []
   (atom {:namespaces     (build-ns-map)
+         :update-ns-map! (fn []
+                           (swap! *env* assoc-in [:namespaces] (build-ns-map)))}))
 
-         :update-ns-map! (fn update-ns-map! []
-                           (swap! *env* assoc-in [:namespaces] (build-ns-map)))})
-  (atom {:namespaces (merge '{goog {:mappings {}, :js-namespace true, :ns goog}
-                              Math {:mappings {}, :js-namespace true, :ns Math}}
-                            @core-env)
-         :js-dependency-index (deps/js-dependency-index {})}))
+(defmulti parse
+  "Extension to tools.analyzer/-parse for CLJS special forms"
+  (fn [[op & rest] env] op))
+
+(defmethod parse :default
+  [form env]
+  (ana/-parse form env))
+
+(defn create-var
+  "Creates a var map for sym and returns it."
+  [sym {:keys [ns]}]
+  (with-meta {:op   :var
+              :name sym
+              :ns   ns}
+    (meta sym)))
 
 (defn macroexpand-1
   "If form represents a macro form or an inlineable function,returns its expansion,
    else returns form."
-  ([form] (macroexpand-1 form (empty-env)))
+  ([form] (macroexpand-1 form (ana/empty-env)))
   ([form env]
    (env/ensure (global-env))))
+
+(defn analyze-form
+  [form env]
+  (ana/-analyze-form form env))
 
 (defn analyze
   "Analyzes a clojure form using tools.analyzer augmented with the Python specific special ops
    and returns its AST, after running #'run-passes on it.)"
-  ([form] (analyze form (empty-env) {}))
+  ([form] (analyze form (ana/empty-env) {}))
   ([form env] (analyze form env {}))
   ([form env opts]
-   (with-bindings (merge {#'ana/macroexpand-1 macroexpand-1}
+   (with-bindings (merge {#'ana/macroexpand-1 macroexpand-1
+                          #'ana/analyze-form  analyze-form
+                          #'ana/create-var    create-var
+                          #'ana/parse         parse
+                          #'ana/var?          var?}
                          (:bindings opts))
-     (-analyze form env))))
+     (env/ensure (global-env)
+       (swap! env/*env* mmerge {:passes-opts (:passes-opts opts)})
+       (run-passes (-analyze form env))))))
