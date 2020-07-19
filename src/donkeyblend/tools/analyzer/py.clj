@@ -18,7 +18,7 @@
 (defn empty-env []
   {:context    :ctx/expr
    :locals     {}
-   :ns         *ns*})
+   :ns         'user}) ;; swap with *ns*
 
 (defn build-ns-map []
   (into {} (mapv #(vector (ns-name %)
@@ -54,7 +54,7 @@
   "If form represents a macro form or an inlineable function,returns its expansion,
    else returns form."
   ([form]
-   (macroexpand-1 form (empty-env)))
+   (macroexpand-1 form (ana/empty-env)))
   ([form env]
    (env/ensure (atom (empty-global-env))
      form)))
@@ -66,7 +66,7 @@
 (defn analyze
   "Analyzes a clojure form using tools.analyzer augmented with the Python specific special ops
    and returns its AST, after running #'run-passes on it.)"
-  ([form] (analyze form (empty-env) {}))
+  ([form] (analyze form (ana/empty-env) {}))
   ([form env] (analyze form env {}))
   ([form env opts]
    (with-bindings (merge {#'ana/macroexpand-1 macroexpand-1
