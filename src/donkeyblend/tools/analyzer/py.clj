@@ -8,12 +8,17 @@
              :rename {analyze -analyze}]
             [clojure.tools.analyzer
              [utils :refer [mmerge] :as u]
-             [env :as env :refer [*env*]]]))
+             [env :as env]]))
 
 (defn ^:dynamic run-passes
   "Function that will be invoked on the AST tree immediately after it has been constructed"
   [ast]
   ast)
+
+(defn empty-env []
+  {:context    :ctx/expr
+   :locals     {}
+   :ns         *ns*})
 
 (defn build-ns-map []
   (into {} (mapv #(vector (ns-name %)
@@ -24,10 +29,10 @@
                            :ns       (ns-name %)})
                  (all-ns))))
 
-(defn global-env []
-  (atom {:namespaces     (build-ns-map)
-         :update-ns-map! (fn []
-                           (swap! *env* assoc-in [:namespaces] (build-ns-map)))}))
+(defn empty-global-env []
+  {:namespaces     (build-ns-map)
+   :update-ns-map! (fn []
+                     (swap! env/*env* assoc-in [:namespaces] (build-ns-map)))})
 
 (defmulti parse
   "Caled by analyze. Extension to tools.analyzer/-parse for python special forms"
@@ -48,9 +53,10 @@
 (defn macroexpand-1
   "If form represents a macro form or an inlineable function,returns its expansion,
    else returns form."
-  ([form] (macroexpand-1 form (ana/empty-env)))
+  ([form]
+   (macroexpand-1 form (empty-env)))
   ([form env]
-   (env/ensure (global-env)
+   (env/ensure (atom (empty-global-env))
      form)))
 
 (defn analyze-form
@@ -60,7 +66,7 @@
 (defn analyze
   "Analyzes a clojure form using tools.analyzer augmented with the Python specific special ops
    and returns its AST, after running #'run-passes on it.)"
-  ([form] (analyze form (ana/empty-env) {}))
+  ([form] (analyze form (empty-env) {}))
   ([form env] (analyze form env {}))
   ([form env opts]
    (with-bindings (merge {#'ana/macroexpand-1 macroexpand-1
@@ -69,6 +75,6 @@
                           #'ana/parse         parse
                           #'ana/var?          var?}
                          (:bindings opts))
-     (env/ensure (global-env)
+     (env/ensure (atom (empty-global-env))
        (swap! env/*env* mmerge (select-keys opts [:passes-opts]))
        (run-passes (-analyze form env))))))
