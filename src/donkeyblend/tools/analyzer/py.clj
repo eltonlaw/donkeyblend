@@ -1,81 +1,80 @@
 (ns donkeyblend.tools.analyzer.py
   "Analyzer for clojure code, extends tools.analyzer with Python specific passes/forms
-  **focus is on blender's python interface**"
-  (:refer-clojure :exclude [var? macroexpand-1 macroexpand *ns*])
+  **DOES NOT AIM TO COVER THE WHOLE LANGUAGE, FOCUS IS ON BLENDER'S PYTHON INTERFACE"
+  (:refer-clojure :exclude [macroexpand-1 macroexpand])
   (:require [clojure.tools.analyzer
              :as ana
              :refer [analyze analyze-in-env wrapping-meta analyze-fn-method]
              :rename {analyze -analyze}]
             [clojure.tools.analyzer
-             [env :as env :refer [*env*]]]
-            [clojure.spec.alpha :as s]))
+             [utils :refer [mmerge] :as u]
+             [env :as env]]))
 
-(s/def ::ns symbol?) ;; unanalyzed form
-(s/def ::namespaces (s/map-of symbol? var?))
-(s/def ::form clojure.lang.PersistentList) ;; unanalyzed form
-(s/def ::locals (s/map-of symbol? ::ast))
-(s/def ::context #{:ctx/expr :ctx/return :ctx/statement})
-(s/def ::env (s/keys :req-un [::locals ::context ::ns]))
-(s/def ::op keyword?)
-(s/def ::children (s/coll-of keyword?)) ;; child nodes in execution order
-(s/def ::ast (s/keys :req-un [::op ::form ::env]
-                     :opt-un [::children]))
-
-(defn macroexpand-1 [form env] nil)
-
-(s/fdef parse
-  :args (s/cat :form ::form
-               :env ::env)
-  :ret ::ast)
-
-(defn parse
-  "Parse for custom special forms defaulting to
-  `clojure.tools.analyzer/-analyze` otherwise"
-  [form env]
-  (case (first form)
-    (ana/-parse form env)))
-
-(defn create-var [sym env] nil)
-
-(defn var? [obj] nil)
-
-(def ^:dynamic *ns* 'donkeyblend.user)
-
-(s/fdef empty-env
-  :ret (s/keys :req-un [::context ::locals ::ns]))
+(defn ^:dynamic run-passes
+  "Function that will be invoked on the AST tree immediately after it has been constructed"
+  [ast]
+  ast)
 
 (defn empty-env []
-  {:context :ctx/statement
-   :locals {}
-   :ns *ns*})
+  {:context    :ctx/expr
+   :locals     {}
+   :ns         'user}) ;; swap with *ns*
 
-(s/fdef empty-global-env
-  :ret (s/keys :req-un [::namespaces]))
+(defn build-ns-map []
+  (into {} (mapv #(vector (ns-name %)
+                          {:mappings (merge (ns-map %) {'in-ns #'clojure.core/in-ns
+                                                        'ns    #'clojure.core/ns})
+                           :aliases  (reduce-kv (fn [a k v] (assoc a k (ns-name v)))
+                                                {} (ns-aliases %))
+                           :ns       (ns-name %)})
+                 (all-ns))))
 
 (defn empty-global-env []
-  {:namespaces {}})
+  {:namespaces     (build-ns-map)
+   :update-ns-map! (fn []
+                     (swap! env/*env* assoc-in [:namespaces] (build-ns-map)))})
 
-(defn run-passes [ast] ast)
+(defmulti parse
+  "Caled by analyze. Extension to tools.analyzer/-parse for python special forms"
+  (fn [[op & rest] env] op))
 
-(s/fdef analyze
-  :args (s/alt
-          :1 (s/cat :form ::form)
-          :2 (s/cat :form ::form
-                    :env ::env)
-          :3 (s/cat :form ::form
-                    :env ::env
-                    :opts map?))
-  :ret ::ast)
+(defmethod parse :default
+  [form env]
+  (ana/-parse form env))
+
+(defn create-var
+  "Creates a var map for sym and returns it."
+  [sym {:keys [ns]}]
+  (with-meta {:op   :var
+              :name sym
+              :ns   ns}
+    (meta sym)))
+
+(defn macroexpand-1
+  "If form represents a macro form or an inlineable function,returns its expansion,
+   else returns form."
+  ([form]
+   (macroexpand-1 form (ana/empty-env)))
+  ([form env]
+   (env/ensure (atom (empty-global-env))
+     form)))
+
+(defn analyze-form
+  [form env]
+  (ana/-analyze-form form env))
 
 (defn analyze
-  "Analyzes a clojure form using tools.analyzer augmented with
-  the Python specific special ops and returns an AST"
-  ([form] (analyze form (empty-env) {}))
+  "Analyzes a clojure form using tools.analyzer augmented with the Python specific special ops
+   and returns its AST, after running #'run-passes on it.)"
+  ([form] (analyze form (ana/empty-env) {}))
   ([form env] (analyze form env {}))
   ([form env opts]
-   (binding [ana/macroexpand-1 macroexpand-1
-             ana/create-var    create-var
-             ana/parse         parse
-             ana/var?          var?]
+   (with-bindings (merge {#'ana/macroexpand-1 macroexpand-1
+                          #'ana/analyze-form  analyze-form
+                          #'ana/create-var    create-var
+                          #'ana/parse         parse
+                          #'ana/var?          var?}
+                         (:bindings opts))
      (env/ensure (atom (empty-global-env))
+       (swap! env/*env* mmerge (select-keys opts [:passes-opts]))
        (run-passes (-analyze form env))))))
