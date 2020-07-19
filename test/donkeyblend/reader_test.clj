@@ -1,5 +1,4 @@
 (ns donkeyblend.reader-test
-  (:refer-clojure :exclude [read-string])
   (:require [clojure.test :refer [deftest testing is]]
             [donkeyblend.reader :as reader]))
 

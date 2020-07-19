@@ -30,7 +30,7 @@
                            (swap! *env* assoc-in [:namespaces] (build-ns-map)))}))
 
 (defmulti parse
-  "Extension to tools.analyzer/-parse for CLJS special forms"
+  "Caled by analyze. Extension to tools.analyzer/-parse for python special forms"
   (fn [[op & rest] env] op))
 
 (defmethod parse :default

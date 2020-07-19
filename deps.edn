@@ -5,7 +5,7 @@
    org.clojure/tools.analyzer {:mvn/version "0.7.0"}
    org.clojure/tools.analyzer.jvm {:mvn/version "0.7.2"}}
  :paths ["src" "resources"]
- :aliases {:run {:main-opts ["-m" "donkeyblend.core"]}
+ :aliases {:compile {:main-opts ["-m" "donkeyblend.core"]}
            :dev {:extra-paths ["dev" "test"]
                  :extra-deps {com.bhauman/rebel-readline {:mvn/version "0.1.4"}}
                  :main-opts  ["-m" "rebel-readline.main"]}
