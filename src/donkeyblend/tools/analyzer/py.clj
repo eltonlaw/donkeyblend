@@ -50,7 +50,8 @@
    else returns form."
   ([form] (macroexpand-1 form (ana/empty-env)))
   ([form env]
-   (env/ensure (global-env))))
+   (env/ensure (global-env)
+     form)))
 
 (defn analyze-form
   [form env]
@@ -69,5 +70,5 @@
                           #'ana/var?          var?}
                          (:bindings opts))
      (env/ensure (global-env)
-       (swap! env/*env* mmerge {:passes-opts (:passes-opts opts)})
+       (swap! env/*env* mmerge (select-keys opts [:passes-opts]))
        (run-passes (-analyze form env))))))
