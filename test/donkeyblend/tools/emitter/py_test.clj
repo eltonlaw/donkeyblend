@@ -22,3 +22,11 @@
          (to-py "(import bpy os)")))
   (is (= "import bpy\nimport os\nfrom math import pi,sin,cos"
          (to-py "(import bpy os (math pi sin cos))"))))
+
+(deftest emit-invoke-arithmetic
+  (is (= "1+2"
+         (to-py "(+ 1 2)")))
+  (is (= "1+2+3+4"
+         (to-py "(+ 1 2 3 4)")))
+  (is (= "1+2+3+4"
+         (to-py "(+ 1 (+ 2 (+ 3 (+ 4))))"))))

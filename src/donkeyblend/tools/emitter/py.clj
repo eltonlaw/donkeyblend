@@ -1,5 +1,6 @@
 (ns donkeyblend.tools.emitter.py
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [clojure.tools.analyzer.ast :as ana.ast]))
 
 (defmulti -emit (fn [{:keys [op]}] op))
 
@@ -33,7 +34,10 @@
 
 (defmethod -emit :invoke
   [{:keys [fn] :as ast}]
+  (println "INVOKE" (keys ast))
   (let [fn-name (name (get-in fn [:meta :name]))]
     (case fn-name
       "import" (-emit-invoke-import ast)
+      ;; FIXME
+      "+" (str/join "+" (map -emit (rest (ana.ast/children ast))))
       (throw (Exception. (format "Emitting :invoke - unknown var %s" fn-name))))))
